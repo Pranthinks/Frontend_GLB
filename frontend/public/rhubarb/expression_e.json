@@ -1,0 +1,16 @@
+{
+  "Genesis8Female_2": {
+    "eCTRLvW": 0.33,
+    "eCTRLvM": 0.08,
+    "eCTRLvF": 0.01,
+    "eCTRLTongueUp-Down": 0.02,
+    "eCTRLMouthWide-Narrow": 0.01,
+    "eCTRLEyesSquint-WidenR": 0.86
+  },
+  "Genesis8Female_3": {
+    "eCTRLvT": 1,
+    "eCTRLvSH": 0.58,
+    "eCTRLvS": 0.01,
+    "eCTRLEyesSquint-WidenR": 0.01
+  }
+}
