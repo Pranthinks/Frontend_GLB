@@ -3,12 +3,11 @@ import { OrbitControls } from "@react-three/drei";
 import Avatar from "./components/Avatar";
 import { Leva } from "leva";
 
-
 function App() {
   return (
     <Canvas
       shadows
-      camera={{ position: [0, 2, 5], fov: 30, near: 0.1, far: 1000 }}
+      camera={{ position: [0, 0.5, 2.5], fov: 60, near: 0.1, far: 1000 }}
       style={{ width: "100vw", height: "100vh" }}
     >
       {/* Lights */}
@@ -30,7 +29,7 @@ function App() {
       <OrbitControls
         enableDamping={true}
         dampingFactor={0.05}
-        target={[0, 0.5, 0]} // focus roughly on torso/center of avatar
+        target={[0, 0, 0]} // center on the avatar's center
       />
     </Canvas>
   );

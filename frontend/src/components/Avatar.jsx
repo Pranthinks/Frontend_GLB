@@ -1,5 +1,6 @@
 import { useLoader, useThree } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import * as THREE from "three";
 import { useEffect, useRef, useState } from "react";
 import { useControls, button } from "leva";
@@ -18,6 +19,9 @@ export default function Avatar() {
   const [availableBoneNames, setAvailableBoneNames] = useState([]);
   const [selectedBone, setSelectedBone] = useState("");
   const [poseControlKey, setPoseControlKey] = useState(0);
+
+  const mixerRef = useRef(null);
+  const actionsRef = useRef({});
 
   const controlValues = {};
 
@@ -120,6 +124,21 @@ export default function Avatar() {
     Reset_Neutral: button(() => resetMorphs())
   });
 
+  useControls("Play Animations", {
+    Play_Idle: button(() => {
+      Object.values(actionsRef.current).forEach((a) => a.stop());
+      actionsRef.current["Idle"]?.reset().play();
+    }),
+    Play_Talking: button(() => {
+      Object.values(actionsRef.current).forEach((a) => a.stop());
+      actionsRef.current["Talking"]?.reset().play();
+    }),
+    Play_StandingGreeting: button(() => {
+      Object.values(actionsRef.current).forEach((a) => a.stop());
+      actionsRef.current["StandingGreeting"]?.reset().play();
+    })
+  });
+
   useEffect(() => {
     const model = gltf.scene;
     const wrapper = new THREE.Group();
@@ -142,6 +161,31 @@ export default function Avatar() {
     setAvailableBoneNames(names);
     setPoseControlKey((prev) => prev + 1);
 
+    const mixer = new THREE.AnimationMixer(model);
+    mixerRef.current = mixer;
+
+    const loadFBXAnimation = async (name, path) => {
+      const fbx = await new FBXLoader().loadAsync(path);
+      const clip = fbx.animations[0];
+      if (!clip) return;
+      const action = mixer.clipAction(clip, model);
+      actionsRef.current[name] = action;
+    };
+
+    loadFBXAnimation("Idle", "/animations/Idle.fbx");
+    loadFBXAnimation("Talking", "/animations/Talking.fbx");
+    loadFBXAnimation("StandingGreeting", "/animations/StandingGreeting.fbx");
+
+    model.traverse((child) => {
+      if ((child.isMesh || child.isSkinnedMesh) && child.morphTargetDictionary) {
+        console.log(`🔍 Mesh: ${child.name}`);
+        console.log("   🎯 Morph Targets:");
+        Object.keys(child.morphTargetDictionary).forEach((morphName) => {
+          console.log(`     - ${morphName}`);
+        });
+      }
+    });
+
     const applyMorphTargets = () => {
       for (const [meshName, morphs] of Object.entries(morphControlRefs.current)) {
         const mesh = morphMeshRefs.current[meshName];
@@ -156,7 +200,10 @@ export default function Avatar() {
       }
     };
 
+    const clock = new THREE.Clock();
     const animate = () => {
+      const delta = clock.getDelta();
+      mixer.update(delta);
       applyMorphTargets();
       requestAnimationFrame(animate);
     };
